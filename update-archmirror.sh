@@ -2,11 +2,10 @@
 
 mirrorlist_url="https://archlinux.org/mirrorlist"
 mirrorlist_settings="country=all&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on"
-mirrorlist=`curl "$mirrorlist_url/?$mirrorlist_settings"`
 
 update_mirror() {
     echo "fetching mirrorlist..."
-    echo $mirrorlist \
+    curl "$mirrorlist_url/?$mirrorlist_settings" \
         | sed -e "s/^#Server/Server/" -r -e "s/## +[^_]+//" -e "s/##//" \
         | tee /tmp/mirrorlist
     
