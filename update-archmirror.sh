@@ -4,10 +4,19 @@ mirrorlist_url="https://archlinux.org/mirrorlist"
 mirrorlist_settings="country=all&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on"
 
 update_mirror() {
-    echo "fetching mirrorlist..."
-    curl "$mirrorlist_url/?$mirrorlist_settings" \
-        | sed -e "s/^#Server/Server/" -r -e "s/## +[^_]+//" -e "s/##//" \
-        | tee /tmp/mirrorlist
+    [ `echo "$0" | wc -w` -eq 2 ] && src_mirror="$1" \
+        || src_mirror=""
+
+    if [ `echo "$src_mirror" | wc -c` -eq 0 ] || [ -f "$src_mirror" ]; then
+        cat "$src_mirror" \
+            | sed -e "s/^#Server/Server/" -r -e "s/## +[^_]+//" -e "s/##//" \
+            | tee /tmp/mirrorlist
+    else
+        echo "fetching mirrorlist..."
+        curl "$mirrorlist_url/?$mirrorlist_settings" \
+            | sed -e "s/^#Server/Server/" -r -e "s/## +[^_]+//" -e "s/##//" \
+            | tee /tmp/mirrorlist
+    fi
     
     echo "rankmirrors and update mirror? [Y/N]"
     read ask
@@ -41,7 +50,8 @@ update_mirror() {
 
 echo "Searching if required packages are installed"
 if [ `pacman -Qtn | grep pacman-contrib | wc -l` -gt 0 ]; then
-    update_mirror
+    [ `echo "$0" | wc -w` -eq 2 ] && update_mirror "$1" \
+        || update_mirror
 else
     echo "Required package (pacman-contrib) not found."
     echo "Please install required package to use this command."
