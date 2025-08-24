@@ -1,7 +1,7 @@
 #!/usr/bin/sh -eu
 
 mirrorlist_url="https://archlinux.org/mirrorlist"
-mirrorlist_settings="country=all&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on"
+mirrorlist_settings="country=all&protocol=https&ip_version=6&use_mirror_status=on"
 
 update_mirror() {
     [ `echo "$0" | wc -w` -eq 2 ] && src_mirror="$1" \
@@ -29,12 +29,12 @@ update_mirror() {
         sudo cp /tmp/mirrorlist /etc/pacman.d/mirrorlist.pacnew
     
         echo "Ranking mirrors... (This might take a while...)"
-        rankmirrors -n 20 /tmp/mirrorlist | tee /tmp/mirrorlist.new
+        ghostmirror -Po -s light -l /tmp/mirrorlist -L 20 -S state,outofdate,morerecent,extimated,speed -d 12
     
         echo "Adding ranked mirror..."
-        sudo cp /tmp/mirrorlist.new /etc/pacman.d/mirrorlist
+        sudo cp -v /tmp/mirrorlist /etc/pacman.d/mirrorlist
     
-        if [ "$?" -eq 0 ]; then
+        if [ $? -eq 0 ]; then
             echo "Successfully updated mirrorlist to /etc/pacman.d/mirrorlist"
         return 0
         else
